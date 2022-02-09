@@ -135,3 +135,8 @@ void printMat4(glm::mat4 MyMatrix)
 
     std::cout << std::endl;
 };
+
+float seperationSquared(const vec2 v1, const vec2 v2)
+{
+    return (v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y);
+};

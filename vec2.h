@@ -21,6 +21,9 @@ public:
 	vec2& operator-(const vec2& fRHS);
 
 	float operator*(const vec2& fRHS);
+
+	vec2 normalised();
+	float magnitude();
 };
 
 float Dot(const vec2 v1, const vec2 v2);

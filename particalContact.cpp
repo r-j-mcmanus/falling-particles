@@ -11,9 +11,11 @@ void ParticleContact::resolve(float duration)
 float ParticleContact::calculateSperatingSpeed() const
 {
 	vec2 relativeVelocity = particles[0]->velocity;
+	//std::cout << "relativeVelocity.x " << relativeVelocity.x << std::endl;
 	if (particles[1])
 	{
 		relativeVelocity -= particles[1]->velocity;
+		//std::cout << "relativeVelocity.x " << relativeVelocity.x << std::endl;
 	}
 
 	return relativeVelocity * contactNormal;
@@ -21,9 +23,12 @@ float ParticleContact::calculateSperatingSpeed() const
 
 void ParticleContact::resolveVelocity(float duration)
 {
+	//std::cout << "contactNormal.x " << contactNormal.x << std::endl;
+	//std::cout << "contactNormal.y " << contactNormal.y << std::endl;
+
 	const float seperatingSpeed = calculateSperatingSpeed();
 
-	std::cout << "seperatingSpeed " << seperatingSpeed << std::endl;
+	//std::cout << "seperatingSpeed " << seperatingSpeed << std::endl;
 
 	// if they are moving appart there is no problem
 	if (seperatingSpeed > 0)
@@ -31,10 +36,10 @@ void ParticleContact::resolveVelocity(float duration)
 		return;
 	}
 
-	// the speed along the normal post bounce
+	// the relative speed along the normal after the bounce
 	float newSeperationSpeed = -seperatingSpeed * restitution;
 
-	std::cout << "newSeperationSpeed " << newSeperationSpeed << std::endl;
+	//std::cout << "newSeperationSpeed " << newSeperationSpeed << std::endl;
 
 
 	///My note: is this is enirely due to collision handeling happening at O(dt) and not O(dt^2)?
@@ -58,7 +63,7 @@ void ParticleContact::resolveVelocity(float duration)
 
 	// deltaVel is the total velocity to be delt out to solve the collision
 	const float deltaVel = newSeperationSpeed - seperatingSpeed;
-	std::cout << "deltaVel " << deltaVel << std::endl;
+	//std::cout << "deltaVel " << deltaVel << std::endl;
 
 	float totalInverseMass = particles[0]->fInvMass;
 	if (particles[1])
@@ -69,20 +74,20 @@ void ParticleContact::resolveVelocity(float duration)
 	// We portion deltaVel propotional to the % of inv mass each partical has
 	// so that light things get more of deltaVel and heavy less
 	const float impulseMagPerInvMass = deltaVel / totalInverseMass;
-	std::cout << "impulseMagPerInvMass " << impulseMagPerInvMass << std::endl;
+	//std::cout << "impulseMagPerInvMass " << impulseMagPerInvMass << std::endl;
 	vec2 impulsePerInvMass = contactNormal * impulseMagPerInvMass;
-	std::cout << "impulsePerInvMass.x " << impulsePerInvMass.x << std::endl;
-	std::cout << "impulsePerInvMass.y " << impulsePerInvMass.y << std::endl;
+	//std::cout << "impulsePerInvMass.x " << impulsePerInvMass.x << std::endl;
+	//std::cout << "impulsePerInvMass.y " << impulsePerInvMass.y << std::endl;
 
 
 	vec2 deltavP0 = impulsePerInvMass * particles[0]->fInvMass;
-	std::cout << "deltavP0.x " << deltavP0.x << std::endl;
-	std::cout << "deltavP0.y " << deltavP0.y << std::endl;
+	//std::cout << "deltavP0.x " << deltavP0.x << std::endl;
+	//std::cout << "deltavP0.y " << deltavP0.y << std::endl;
 
 	particles[0]->velocity += impulsePerInvMass * particles[0]->fInvMass;
 	if (particles[1])
 	{
-		particles[1]->velocity += impulsePerInvMass * particles[1]->fInvMass;
+		particles[1]->velocity -= impulsePerInvMass * particles[1]->fInvMass;
 	}
 }
 
@@ -104,6 +109,6 @@ void ParticleContact::resolveInterpenetration(float duration)
 	particles[0]->position += movePerInvMass * particles[0]->fInvMass;
 	if (particles[1])
 	{
-		particles[1]->position += movePerInvMass * particles[1]->fInvMass;
+		particles[1]->position -= movePerInvMass * particles[1]->fInvMass;
 	}
 }

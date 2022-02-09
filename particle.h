@@ -12,6 +12,7 @@ public:
 	vec2 force = vec2(0, 0);
 	vec2 impulse = vec2(0, 0);
 	vec2 acceleration = vec2(0, 0);
+	vec2 gravity = vec2(0, 0);
 
 	float fInvMass = 1.0f;
 	float fRadius = 1.0f;

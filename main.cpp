@@ -14,6 +14,7 @@
 #include "particle.h"   
 #include "ParticalContact.h"
 
+#include "Utility.h"
 
 glm::mat4 updatePosition()
 {
@@ -68,7 +69,12 @@ int main() {
     ///
     ///  
     
-    GLCircle myCircle(0, 0, 5.0f, 1.0f, 8);
+    GLCircle myCircles[3]{
+        {0, 0, 5.0f, 1.0f, 8},
+        {0, 0, 5.0f, 1.0f, 8},
+        {0, 0, 5.0f, 1.0f, 8}
+    };
+
     GLQuadrangle myFloor(
         glm::vec3(-10, 0, 10),
         glm::vec3(-10, 0, -10),
@@ -87,22 +93,28 @@ int main() {
     const glm::mat4 M4projection = glm::perspective(glm::radians(45.0f), 4.0f / 3.0f, 0.1f, 100.0f);
     glm::mat4 M4model = glm::mat4(1.0f);
 
-    Particle particle;
+    Particle particles[3];
 
-    particle.position.x = 0.0f; //2.0f * (float)(rand() % 100) / 100.0f;
-    particle.position.y = 2.0f; //2.0 + 2.0f * (float)(rand() % 100) / 100.0f;
+    particles[0].position = vec2(0.0f,1.5f);
+    particles[0].velocity = vec2(0.0f, 0.0f);
+    particles[0].acceleration = vec2(0,-10);
     
-    particle.velocity.x = 0;
-    particle.velocity.y = 5.0f;
+    particles[1].position = vec2(-4.0f, 3.0f);
+    particles[1].velocity = vec2(2.0f, 5.0f);
+    particles[1].acceleration = vec2(0.0f, -10.0f);
 
-    particle.acceleration.x = 0;
-    particle.acceleration.y = -10.0f;
+    particles[2].position = vec2(1.5f, 3.0f);
+    particles[2].velocity = vec2(-4.0f, 5.0f);
+    particles[2].acceleration = vec2(0.0f, -10.0f);
 
     float currentTime = (float)glfwGetTime();
     float dt = 1.0f / 120.0f;
     float T = 0;
 
     ParticleContact particalContact;
+
+    float minSep = 0;
+    float pSeperation = 0;
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -111,29 +123,46 @@ int main() {
 
         while (T > dt)
         {
-            particle.integrate(dt);
+            particles[0].integrate(dt);
+            particles[1].integrate(dt);
+            particles[2].integrate(dt);
 
-            if (particle.position.y <= particle.fRadius)
+            if (particles[0].position.y <= particles[0].fRadius)
             {
-                particalContact.particles[0] = &particle;
+                particalContact.particles[0] = &particles[0];
                 particalContact.particles[1] = NULL;
                 particalContact.contactNormal = vec2(0, 1);
                 particalContact.resolve(dt);
-                //std::cout << " Pos " << particle.position.x << " " << particle.position.y
-                //    << " Vel " << particle.velocity.x << " " << particle.velocity.y
-                //    << " Acc " << particle.acceleration.x << " " << particle.acceleration.y
-                //    << std::endl;
-                //break;
+            }
+
+            pSeperation = seperationSquared(particles[1].position, particles[2].position);
+            minSep = (particles[1].fRadius + particles[2].fRadius) * (particles[1].fRadius + particles[2].fRadius);
+            std::cout << "pSeperation " << pSeperation << " minSep " << minSep << " equality " << (pSeperation < minSep) << std::endl;
+
+            if (seperationSquared(particles[1].position, particles[2].position) <= (particles[1].fRadius + particles[2].fRadius) * (particles[1].fRadius + particles[2].fRadius))
+            {
+                particalContact.particles[0] = &particles[1];
+                particalContact.particles[1] = &particles[2];
+                particalContact.contactNormal = vec2(-1,0);// (particles[1].position - particles[2].position).normalised();
+                particalContact.resolve(dt);
+                break;
             }
 
             // wipe the drawing surface clear
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            M4model = particle.getTranslationMatrix();
-            myCircle.composeTransformation(M4projection, M4view, M4model);
-            myCircle.draw();
+
+            myCircles[0].composeTransformation(M4projection, M4view, particles[0].getTranslationMatrix());
+            myCircles[0].draw();
+
+            myCircles[1].composeTransformation(M4projection, M4view, particles[1].getTranslationMatrix());
+            myCircles[1].draw();
+
+            myCircles[2].composeTransformation(M4projection, M4view, particles[2].getTranslationMatrix());
+            myCircles[2].draw();
+
             myFloor.composeTransformation(M4projection, M4view, glm::mat4(1.0));
             myFloor.draw();
-            //myCircle.drawCircle();
+
             // update other events like input handling 
             glfwPollEvents();
             // put the stuff we've been drawing onto the display
@@ -148,4 +177,3 @@ int main() {
 
     return 1;
 }
-

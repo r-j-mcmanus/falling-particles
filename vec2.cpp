@@ -1,5 +1,6 @@
 
 #include"vec2.h"
+#include <math.h>>
 
 vec2::vec2()
 {
@@ -10,6 +11,16 @@ vec2::vec2(const float fx, const float fy)
 {
 	x = fx;
 	y = fy;
+}
+
+float vec2::magnitude()
+{
+	return sqrt(this->x * this->x + this->y * this->y);
+}
+
+vec2 vec2::normalised()
+{
+	return *this / this->magnitude();
 }
 
 vec2& vec2::operator*(const float& fRHS)
