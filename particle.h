@@ -6,6 +6,8 @@
 class Particle
 {
 public:
+	int ID = 0;
+
 	vec2 position = vec2(0,0);
 	vec2 newPosition = vec2(0, 0);
 	vec2 velocity = vec2(0, 0);

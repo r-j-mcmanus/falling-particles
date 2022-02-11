@@ -16,6 +16,48 @@
 
 #include "Utility.h"
 
+
+void FindCollisions(Particle* particles, const float dt)
+{
+    float pSeperation = 0;
+    float minSep = 0;
+    ParticleContact particalContact;
+    vec2 normal;
+    for (int i = 0; i < 3; i++)
+    {
+        if (particles[i].position.y <= particles[i].fRadius)
+        {
+            particalContact.particles[0] = &particles[i];
+            particalContact.particles[1] = NULL;
+            particalContact.contactNormal = vec2(0.0f, 1.0f);
+            particalContact.resolve(dt);
+        }
+
+        for (int j = i + 1; j < 3; j++)
+        {
+
+            pSeperation = seperationSquared(particles[i].position, particles[j].position);
+            minSep = (particles[i].fRadius + particles[j].fRadius) * (particles[i].fRadius + particles[j].fRadius);
+            
+            if (pSeperation <= minSep)
+            {
+                normal = vec2((particles[i].position - particles[j].position)).normalised();
+
+                //std::cout << "i " << i << " j " << j << std::endl;
+                //std::cout << "pSeperation " << pSeperation << " minSep " << minSep << " equality bool " << (pSeperation < minSep) << std::endl;
+                //std::cout << "normal.x " << normal.x << " normal.y " << normal.y << std::endl << std::endl;
+
+                particalContact.particles[0] = &particles[i];
+                particalContact.particles[1] = &particles[j];
+                
+                particalContact.contactNormal = normal;
+                particalContact.resolve(dt);
+                break;
+            }
+        }
+    }
+}
+
 glm::mat4 updatePosition()
 {
     const float fLoopDuration = 5.0f;
@@ -70,9 +112,9 @@ int main() {
     ///  
     
     GLCircle myCircles[3]{
-        {0, 0, 5.0f, 1.0f, 8},
-        {0, 0, 5.0f, 1.0f, 8},
-        {0, 0, 5.0f, 1.0f, 8}
+        {0, 0, 5.0f, 1.0f, 20},
+        {0, 0, 5.0f, 1.0f, 20},
+        {0, 0, 5.0f, 1.0f, 20}
     };
 
     GLQuadrangle myFloor(
@@ -97,7 +139,7 @@ int main() {
 
     particles[0].position = vec2(0.0f,1.5f);
     particles[0].velocity = vec2(0.0f, 0.0f);
-    particles[0].acceleration = vec2(0,-10);
+    particles[0].acceleration = vec2(0,-10.0f);
     
     particles[1].position = vec2(-4.0f, 3.0f);
     particles[1].velocity = vec2(2.0f, 5.0f);
@@ -123,42 +165,21 @@ int main() {
 
         while (T > dt)
         {
-            particles[0].integrate(dt);
-            particles[1].integrate(dt);
-            particles[2].integrate(dt);
-
-            if (particles[0].position.y <= particles[0].fRadius)
+            for (int i = 0; i < 3; i++)
             {
-                particalContact.particles[0] = &particles[0];
-                particalContact.particles[1] = NULL;
-                particalContact.contactNormal = vec2(0, 1);
-                particalContact.resolve(dt);
+                particles[i].integrate(dt);
             }
 
-            pSeperation = seperationSquared(particles[1].position, particles[2].position);
-            minSep = (particles[1].fRadius + particles[2].fRadius) * (particles[1].fRadius + particles[2].fRadius);
-            std::cout << "pSeperation " << pSeperation << " minSep " << minSep << " equality " << (pSeperation < minSep) << std::endl;
-
-            if (seperationSquared(particles[1].position, particles[2].position) <= (particles[1].fRadius + particles[2].fRadius) * (particles[1].fRadius + particles[2].fRadius))
-            {
-                particalContact.particles[0] = &particles[1];
-                particalContact.particles[1] = &particles[2];
-                particalContact.contactNormal = vec2(-1,0);// (particles[1].position - particles[2].position).normalised();
-                particalContact.resolve(dt);
-                break;
-            }
+            FindCollisions(particles, dt);
 
             // wipe the drawing surface clear
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            myCircles[0].composeTransformation(M4projection, M4view, particles[0].getTranslationMatrix());
-            myCircles[0].draw();
-
-            myCircles[1].composeTransformation(M4projection, M4view, particles[1].getTranslationMatrix());
-            myCircles[1].draw();
-
-            myCircles[2].composeTransformation(M4projection, M4view, particles[2].getTranslationMatrix());
-            myCircles[2].draw();
+            for (int i = 0; i < 3; i++)
+            {
+                myCircles[i].composeTransformation(M4projection, M4view, particles[i].getTranslationMatrix());
+                myCircles[i].draw();
+            }
 
             myFloor.composeTransformation(M4projection, M4view, glm::mat4(1.0));
             myFloor.draw();

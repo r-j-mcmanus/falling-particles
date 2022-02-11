@@ -23,6 +23,7 @@ public:
 	float operator*(const vec2& fRHS);
 
 	vec2 normalised();
+	vec2 normalise();
 	float magnitude();
 };
 

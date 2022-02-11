@@ -3,6 +3,8 @@
 #include "particle.h"
 #include "vec2.h"
 
+//Ian Millington : Game Physics Engine Development
+
 class ParticleContact
 {
 public:
@@ -20,5 +22,4 @@ private:
 	void resolveVelocity(float duration);
 	void resolveInterpenetration(float duration);
 	float penetration;
-
 };

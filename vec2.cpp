@@ -18,11 +18,11 @@ float vec2::magnitude()
 	return sqrt(this->x * this->x + this->y * this->y);
 }
 
+
 vec2 vec2::normalised()
 {
-	return *this / this->magnitude();
+	return vec2(*this) / this->magnitude();
 }
-
 vec2& vec2::operator*(const float& fRHS)
 {
 	return vec2(*this) *= fRHS;
@@ -47,6 +47,12 @@ vec2& vec2::operator/(const float& fRHS)
 }
 
 
+vec2 vec2::normalise()
+{
+	this->x = this->x / this->magnitude();
+	this->y = this->y / this->magnitude();
+	return *this;
+}
 vec2& vec2::operator+=(const vec2& mRHS)
 {
 	this->x += mRHS.x;
